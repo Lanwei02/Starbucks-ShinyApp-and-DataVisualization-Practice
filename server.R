@@ -54,10 +54,6 @@ topcountry <- function(country = 'CA'){
     dplyr::summarise(Counts = n()) %>% arrange(desc(Counts))
   return(table2)
 }
-## Ownership DataTable---------------------------
-ownership <- starbucks %>% group_by(Ownership.Type) %>% 
-  dplyr::summarise(Total = n(), Percentage = Total/dim(starbucks)[1] * 100) %>% 
-  arrange(desc(Total))
 
 # Shiny App---------------------------
 server <- function(input, output) {
@@ -139,11 +135,31 @@ server <- function(input, output) {
   
 ## Ownership DataTable--------------
   output$ownership_dt <- DT::renderDataTable({
+    if (input$country == 'ALL'){
+      ownership <- starbucks %>% group_by(Ownership.Type) %>% 
+        dplyr::summarise(Total = n(), Percentage = Total/dim(starbucks)[1] * 100) %>% 
+        arrange(desc(Total))
+    }
+    else{
+      ownership <- starbucks[starbucks$Country %in% c(input$country),] %>% group_by(Ownership.Type) %>% 
+        dplyr::summarise(Total = n(), Percentage = Total/dim(starbucks)[1] * 100) %>% 
+        arrange(desc(Total))
+    }
     DT::datatable(ownership)
   })
   
 ## Ownership Bar------------------
   output$ownership_bar <- renderPlotly({
+    if (input$country == 'ALL'){
+      ownership <- starbucks %>% group_by(Ownership.Type) %>% 
+        dplyr::summarise(Total = n(), Percentage = Total/dim(starbucks)[1] * 100) %>% 
+        arrange(desc(Total))
+    }
+    else{
+      ownership <- starbucks[starbucks$Country %in% c(input$country),] %>% group_by(Ownership.Type) %>% 
+        dplyr::summarise(Total = n(), Percentage = Total/dim(starbucks)[1] * 100) %>% 
+        arrange(desc(Total))
+    }
     ownership$Ownership.Type <- factor(ownership$Ownership.Type, 
                                        levels = ownership$Ownership.Type) 
     
